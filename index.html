@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PyroLunar · Fire Safety Insights for a Lunar Base</title>
+<meta name="description" content="PyroLunar: NASA PSI microgravity combustion data, organized for lunar-base fire safety. Code written with AI assistance (Claude, Anthropic); all data from NASA PSI.">
+<meta name="generator" content="Hand-written HTML/CSS/JS, created with AI assistance (Claude, Anthropic)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme: dark;
+  --bg:#0f1424;        /* cabin night */
+  --bg-2:#151b2f;      /* raised surface */
+  --rule:#273050;      /* hairlines */
+  --ink:#e8ebf4; --ink-2:#aab2c8; --ink-3:#7a84a0;
+  --flame:#8ab8ff;     /* microgravity blue flame */
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70;   /* detection, extinguishment, prevention */
+  --band:#9085e9;
+  --good:#4cc38a; --warn:#e8b04b; --bad:#f07a6e;
+  --head:"IBM Plex Sans Condensed","IBM Plex Sans",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:130px}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 var(--body)}
+a{color:var(--flame);text-underline-offset:3px}
+:focus-visible{outline:2px solid var(--flame);outline-offset:2px}
+.wrap{max-width:1160px;margin:0 auto;padding:0 28px}
+h1,h2,h3{font-family:var(--head);font-weight:600;letter-spacing:-.005em;line-height:1.15;margin:0}
+p{margin:0}
+.muted{color:var(--ink-2)} .faint{color:var(--ink-3)} .small{font-size:14px}
+
+/* ---------- navigation ---------- */
+nav.top{position:sticky;top:0;z-index:20;background:rgba(15,20,36,.94);backdrop-filter:blur(6px);border-bottom:1px solid var(--rule)}
+nav.top .wrap{display:flex;align-items:center;gap:26px;height:60px}
+.brand{display:flex;align-items:center;gap:10px;color:var(--ink);text-decoration:none;font-family:var(--head);font-weight:600;font-size:19px}
+.brand i{width:16px;height:16px;border-radius:50%;background:radial-gradient(circle at 50% 50%,#eaf3ff 0 18%,#8ab8ff 40%,#3a63c9 70%,transparent 72%);box-shadow:0 0 12px #5b8cff}
+.links{display:flex;gap:2px;flex:1}
+.links a{color:var(--ink-2);text-decoration:none;padding:19px 11px 17px;font-size:15px;border-bottom:2px solid transparent}
+.links a:hover{color:var(--ink)}
+.links a[aria-current=page]{color:var(--ink);border-bottom-color:var(--flame)}
+.findbtn{display:flex;align-items:center;gap:10px;background:transparent;border:1px solid var(--rule);color:var(--ink-2);font:inherit;font-size:14px;padding:6px 10px;cursor:pointer;border-radius:3px}
+.findbtn:hover{border-color:var(--ink-3);color:var(--ink)}
+.findbtn kbd{font:12px var(--body);color:var(--ink-3);border:1px solid var(--rule);padding:0 5px;border-radius:2px}
+
+/* ---------- scenario strip ---------- */
+.scenario{position:sticky;top:60px;z-index:19;border-bottom:1px solid var(--rule);background:var(--bg-2)}
+.scenario .wrap{display:flex;align-items:center;gap:22px;flex-wrap:wrap;padding-top:12px;padding-bottom:12px;font-size:14px}
+.seg{display:inline-flex;border:1px solid var(--rule);border-radius:3px;overflow:hidden}
+.seg button{background:none;border:0;color:var(--ink-2);font:inherit;font-size:14px;padding:6px 14px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--rule)}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--bg)}
+.facts{display:flex;gap:22px;color:var(--ink-2)}
+.facts b{color:var(--ink);font-weight:500}
+
+/* ---------- pages ---------- */
+main{padding-bottom:40px}
+.page{display:none}
+.page.on{display:block}
+section.block{padding:40px 0;border-bottom:1px solid var(--rule)}
+section.block:last-child{border-bottom:0}
+.block h2{font-size:26px;margin-bottom:8px}
+.block .lede{max-width:70ch;color:var(--ink-2);margin-bottom:22px}
+
+/* hero (overview only) */
+.hero{display:grid;grid-template-columns:1.25fr .75fr;gap:40px;align-items:center;padding:52px 0 44px;border-bottom:1px solid var(--rule)}
+.hero h1{font-size:44px;font-weight:600;max-width:16ch}
+.hero p{margin-top:14px;max-width:58ch;color:var(--ink-2);font-size:17px}
+.hero .nums{display:flex;gap:34px;margin-top:26px}
+.hero .nums div{font-size:14px;color:var(--ink-2)}
+.hero .nums b{display:block;font-family:var(--head);font-size:28px;color:var(--ink);font-weight:600}
+.sphere{justify-self:center;width:230px;aspect-ratio:1;border-radius:50%;position:relative;
+  background:radial-gradient(circle at 50% 52%, rgba(238,245,255,.95) 0 9%, rgba(160,200,255,.85) 20%, rgba(80,130,240,.55) 42%, rgba(50,80,200,.18) 62%, transparent 70%);
+  filter:blur(.4px);animation:breathe 6s ease-in-out infinite}
+.sphere::after{content:"";position:absolute;inset:18%;border-radius:50%;box-shadow:0 0 60px 18px rgba(90,140,255,.25)}
+.sphere-cap{text-align:center;font-size:13px;color:var(--ink-3);margin-top:12px}
+@keyframes breathe{50%{transform:scale(1.04);opacity:.92}}
+@media (prefers-reduced-motion:reduce){.sphere{animation:none}}
+
+/* page header for modules */
+.phead{padding:44px 0 30px;border-bottom:1px solid var(--rule)}
+.phead .mod{font-size:14px;color:var(--ink-2);display:flex;align-items:center;gap:8px}
+.phead .mod i{width:10px;height:10px;display:inline-block}
+.phead h1{font-size:34px;margin-top:10px;max-width:30ch}
+.phead p{margin-top:12px;color:var(--ink-2);max-width:70ch}
+
+/* investigation rows */
+.inv{display:grid;grid-template-columns:190px 1fr 230px;gap:24px;padding:22px 0;border-top:1px solid var(--rule)}
+.inv:first-of-type{border-top:0}
+.inv .ac{font-family:var(--head);font-size:22px;font-weight:600}
+.inv .id{font-size:13px;color:var(--ink-3)}
+.inv .t{font-weight:500}
+.inv .meta{font-size:14px;color:var(--ink-2);margin-top:4px}
+.inv .obj{font-size:15px;color:var(--ink-2);margin-top:10px;max-width:70ch}
+.inv details{margin-top:8px;font-size:14px}
+.inv summary{cursor:pointer;color:var(--flame)}
+.inv details p{margin-top:8px;color:var(--ink-2);max-width:75ch}
+.app{font-size:14px;line-height:1.4}
+.app b{display:flex;gap:6px;align-items:center;font-weight:600;margin-bottom:3px}
+.app.good b{color:var(--good)} .app.warn b{color:var(--warn)} .app.bad b{color:var(--bad)}
+.app span{color:var(--ink-2)}
+
+/* charts */
+.chart{width:100%;height:auto;display:block;margin-top:8px}
+.chart text{font:13px var(--body);fill:var(--ink-2)}
+.chart .lab{fill:var(--ink);font-weight:500}
+.legend{display:flex;gap:20px;flex-wrap:wrap;font-size:14px;color:var(--ink-2);margin:4px 0 6px}
+.legend span{display:inline-flex;align-items:center;gap:7px}
+.sw{width:11px;height:11px;display:inline-block}
+.callout{border-left:3px solid var(--warn);padding:4px 0 4px 14px;margin-top:22px;max-width:80ch;color:var(--ink-2)}
+.callout b{color:var(--ink)}
+.tip{position:fixed;pointer-events:none;background:#eef2fb;color:#0f1424;font-size:13px;padding:8px 10px;max-width:300px;z-index:50;display:none;line-height:1.45;border-radius:2px}
+
+/* tables & filters */
+.filters{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin:10px 0 14px;font-size:14px}
+select,.btn{font:inherit;font-size:14px;color:var(--ink);background:var(--bg-2);border:1px solid var(--rule);padding:7px 10px;border-radius:3px}
+.btn{cursor:pointer} .btn:hover{border-color:var(--ink-3)}
+.count{color:var(--ink-3)}
+.spacer{flex:1}
+.tablewrap{overflow:auto;max-height:440px;border-top:1px solid var(--rule)}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{padding:8px 12px 8px 0;border-bottom:1px solid var(--rule);text-align:left;white-space:nowrap}
+th{position:sticky;top:0;background:var(--bg);color:var(--ink-2);font-weight:500}
+td.na{color:var(--ink-3)}
+.cmp th,.cmp td{white-space:normal;vertical-align:top;padding-right:24px}
+.cmp tbody th{width:190px;color:var(--ink-2)}
+.cmp thead th{font-family:var(--head);font-size:20px;color:var(--ink)}
+
+.howto ol{list-style:none;counter-reset:step;padding:0;margin:14px 0 0;display:grid;grid-template-columns:repeat(3,1fr);gap:30px}
+.howto li{counter-increment:step;color:var(--ink-2);font-size:15px;border-top:2px solid var(--flame);padding-top:12px}
+.howto li::before{content:counter(step);font-family:var(--head);font-size:26px;color:var(--flame);display:block;line-height:1;margin-bottom:6px}
+.howto b{display:block;color:var(--ink);font-weight:600;margin-bottom:4px}
+.findings{list-style:none;padding:0;margin:6px 0 0;max-width:86ch}
+.findings li{padding:12px 0 12px 22px;border-top:1px solid var(--rule);position:relative;color:var(--ink-2)}
+.findings li:first-child{border-top:0}
+.findings li::before{content:"";position:absolute;left:0;top:21px;width:9px;height:9px;background:var(--flame)}
+.findings li.caveat::before{background:var(--warn)}
+.findings b{color:var(--ink);font-weight:600}
+.limits{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:1fr 1fr;gap:18px 40px;max-width:1000px}
+.limits li{font-size:15px;color:var(--ink-2)}
+.limits b{display:block;color:var(--ink);font-weight:600;margin-bottom:2px}
+
+/* search palette */
+.palette{position:fixed;inset:0;background:rgba(5,8,16,.7);display:none;z-index:40;align-items:flex-start;justify-content:center;padding-top:12vh}
+.palette.on{display:flex}
+.pbox{width:min(640px,92vw);background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;box-shadow:0 30px 80px rgba(0,0,0,.5)}
+.pbox input{width:100%;background:transparent;border:0;border-bottom:1px solid var(--rule);color:var(--ink);font:inherit;font-size:18px;padding:16px 18px;outline:none}
+.phelp{padding:12px 18px;font-size:14px;color:var(--ink-2);border-bottom:1px solid var(--rule)}
+.phelp button{background:none;border:1px solid var(--rule);color:var(--ink-2);font:inherit;font-size:13px;padding:2px 9px;margin:6px 6px 0 0;cursor:pointer;border-radius:2px}
+.phelp button:hover{color:var(--ink);border-color:var(--ink-3)}
+.pres{max-height:50vh;overflow:auto}
+.pres button{display:block;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--rule);color:var(--ink);font:inherit;padding:11px 18px;cursor:pointer}
+.pres button:hover,.pres button.sel{background:#1d2540}
+.pres small{display:block;color:var(--ink-3);font-size:13px}
+.pempty{padding:14px 18px;color:var(--ink-3);font-size:14px}
+
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 14px;font-size:14px;display:none;z-index:60;border-radius:2px}
+
+footer{border-top:1px solid var(--rule);padding:34px 0 50px;font-size:13px;color:var(--ink-3)}
+footer .cols{display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:36px}
+footer h3{font-size:14px;color:var(--ink-2);margin-bottom:6px;font-weight:500}
+footer p{line-height:1.6}
+
+@media (max-width:900px){
+  .scenario{position:static}
+  .links{display:none}
+  .hero{grid-template-columns:1fr} .sphere{width:160px}
+  .inv{grid-template-columns:1fr;gap:8px}
+  .limits,footer .cols,.howto ol{grid-template-columns:1fr}
+  .hero h1{font-size:34px}
+}
+</style>
+</head>
+<body>
+
+<nav class="top" aria-label="Main">
+  <div class="wrap">
+    <a class="brand" href="#overview"><i aria-hidden="true"></i>PyroLunar</a>
+    <div class="links" id="links">
+      <a href="#overview">Overview</a>
+      <a href="#detection">Detection</a>
+      <a href="#extinguishment">Extinguishment</a>
+      <a href="#prevention">Prevention</a>
+      <a href="#compare">Compare</a>
+      <a href="#data">Data</a>
+    </div>
+    <button class="findbtn" id="openFind" aria-haspopup="dialog">🔎 Your search buddy <kbd>Ctrl K</kbd></button>
+  </div>
+</nav>
+
+<div class="scenario">
+  <div class="wrap">
+    <span class="faint">Evaluate results for</span>
+    <div class="seg" role="group" aria-label="Scenario">
+      <button data-scen="earth" aria-pressed="false">Earth</button>
+      <button data-scen="iss" aria-pressed="false">ISS</button>
+      <button data-scen="moon" aria-pressed="true">Lunar base</button>
+    </div>
+    <div class="facts" id="facts"></div>
+  </div>
+</div>
+
+<main class="wrap">
+
+  <!-- OVERVIEW -->
+  <div class="page" id="pg-overview">
+    <div class="hero">
+      <div>
+        <h1>In microgravity, fire has no up.</h1>
+        <p>NASA has burned fabrics, plastics and fuel droplets on the International Space Station for two decades. PyroLunar organizes those results for the people designing a lunar base, and shows which findings still hold when oxygen rises to 30% and gravity drops to 1/6&nbsp;g.</p>
+        <div class="nums" id="nums"></div>
+      </div>
+      <div>
+        <div class="sphere" role="img" aria-label="Illustration of a near-spherical blue flame in microgravity"></div>
+        <div class="sphere-cap">In still air without buoyancy, a candle flame can burn as a dim blue ball.<br>Airflow and fuel shape stretch it into other forms.</div>
+      </div>
+    </div>
+
+    <section class="block howto">
+      <h2>How to use PyroLunar</h2>
+      <ol>
+        <li><b>Choose a scenario</b>Earth, ISS or Lunar base in the bar at the top. Every result on the site is then labeled by how far it applies there.</li>
+        <li><b>Open a module</b>Detection, Extinguishment or Prevention. Each starts with its research question and the key findings, followed by charts and the test records.</li>
+        <li><b>Check and reuse the data</b>Compare any two investigations, or download the original NASA tables with their DOIs from the Data page.</li>
+      </ol>
+      <p class="faint small" style="margin-top:14px">Looking for something specific? Press Ctrl K to open your search buddy.</p>
+    </section>
+
+    <section class="block">
+      <h2>Where the data stops</h2>
+      <p class="lede">Each bar is the oxygen range one investigation tested. The shaded band is the oxygen level of the scenario selected above. Bars that never reach the band mean there is no direct evidence for that condition.</p>
+      <div class="legend">
+        <span><i class="sw" style="background:var(--s1)"></i>Detection</span>
+        <span><i class="sw" style="background:var(--s2)"></i>Extinguishment</span>
+        <span><i class="sw" style="background:var(--s3)"></i>Prevention</span>
+        <span><i class="sw" style="background:rgba(144,133,233,.25);outline:1px dashed var(--band)"></i>Scenario oxygen</span>
+      </div>
+      <svg class="chart" id="o2map" role="img" aria-label="Oxygen range tested by each investigation"></svg>
+      <p class="callout" id="gapnote"></p>
+    </section>
+
+    <section class="block">
+      <h2>Three questions, seven investigations</h2>
+      <p class="lede">Each module answers one research question with the PSI investigations that address it most directly.</p>
+      <div id="modlist"></div>
+    </section>
+
+    <section class="block">
+      <h2>What this data cannot tell you</h2>
+      <p class="lede">Every comparison on this site carries these limits.</p>
+      <ul class="limits" id="limits"></ul>
+    </section>
+  </div>
+
+  <!-- MODULE PAGES -->
+  <div class="page" id="pg-detection"></div>
+  <div class="page" id="pg-extinguishment"></div>
+  <div class="page" id="pg-prevention"></div>
+
+  <!-- COMPARE -->
+  <div class="page" id="pg-compare">
+    <div class="phead">
+      <h1>Compare two investigations</h1>
+      <p>Pick any two of the seven investigations to see their conditions, outcomes and applicability to the selected scenario side by side.</p>
+    </div>
+    <section class="block">
+      <div class="filters">
+        <select id="cmpA" aria-label="First investigation"></select>
+        <span class="faint">and</span>
+        <select id="cmpB" aria-label="Second investigation"></select>
+      </div>
+      <table class="cmp" id="cmpT"></table>
+    </section>
+  </div>
+
+  <!-- DATA -->
+  <div class="page" id="pg-data">
+    <div class="phead">
+      <h1>Data and sources</h1>
+      <p>Every number on this site comes from the experimental tables of NASA's Physical Sciences Informatics repository (CC0). Download the cleaned combined table, or each investigation's original file.</p>
+    </div>
+    <section class="block">
+      <div class="filters">
+        <button class="btn" data-dl="clean">Download clean table (CSV)</button>
+        <button class="btn" data-copy="clean">Copy clean table</button>
+      </div>
+      <div class="tablewrap" style="max-height:none"><table id="srcT"></table></div>
+    </section>
+    <section class="block">
+      <h2>How to cite</h2>
+      <p class="lede">NASA's Open Science guidance asks every user of PSI data to cite the investigation's DOI, for example: NASA PSI, Spacecraft Fire Experiment-II (SAFFIRE-II), PSI-99, doi:10.60555/2chp-m469.</p>
+    </section>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap cols">
+    <div>
+      <h3>PyroLunar</h3>
+      <p>Team FrogStarz<br>2026 NASA Space Apps Challenge, Antalya<br>Challenge: Flame in Freefall</p>
+    </div>
+    <div>
+      <h3>Data</h3>
+      <p>NASA Physical Sciences Informatics (PSI), CC0 license. Seven investigations, cited by DOI on the <a href="#data">Data</a> page. Not endorsed by NASA.</p>
+    </div>
+    <div>
+      <h3>Use of AI (Super Intelligence)</h3>
+      <p>This site's code and the data-cleaning script were written with the help of an AI assistant (Claude, Anthropic). The project scope, target users, modules and research questions were defined by the team with mentor guidance. All figures come from NASA PSI tables; no data was generated by AI.</p>
+    </div>
+  </div>
+</footer>
+
+<div class="palette" id="palette" role="dialog" aria-modal="true" aria-label="Your search buddy">
+  <div class="pbox">
+    <input id="q" type="search" placeholder="What are you looking for? Try smoke, fabric or CO2" autocomplete="off" aria-label="Search">
+    <div class="phelp"><b style="color:var(--ink)">Your search buddy</b> takes you to the right page, experiment or material. Type a topic in a word or two; it works with keywords, not full sentences.<br>
+      <button data-try="smoke">smoke</button><button data-try="fabric">fabric</button><button data-try="CO2">CO2</button><button data-try="oxygen">oxygen</button><button data-try="PMMA">PMMA</button><button data-try="SAFFIRE">SAFFIRE</button></div>
+    <div class="pres" id="pres"></div>
+  </div>
+</div>
+<div class="tip" id="tip"></div>
+<div class="toast" id="toast"></div>
+
+<script src="data.js"></script>
+<script>
+(() => {
+const D = window.PSI;
+const E = Object.fromEntries(D.experiments.map(e => [e.id, e]));
+const T = D.tests;
+const MODS = {
+  tespit:   {slug:"detection",      name:"Detection",      hex:"#3987e5", rq:"How do smoke and aerosols form in microgravity, and how are they measured?", intro:"Fire detectors on Earth are tuned to smoke that rises. In microgravity smoke drifts, and particles grow differently. SAME and SAME-R heated five common spacecraft materials and measured the smoke they produced."},
+  sondurme: {slug:"extinguishment", name:"Extinguishment", hex:"#d95926", rq:"How does diluting the atmosphere with carbon dioxide and helium affect flame extinction?", intro:"FLEX and FLEX-2 burned single fuel droplets in a sealed chamber while changing oxygen, pressure and the diluent gas, to find where flames go out."},
+  onleme:   {slug:"prevention",     name:"Prevention",     hex:"#199e70", rq:"Under which conditions do plastics and fabrics ignite and spread flame?", intro:"BASS-II burned small solid samples on the ISS. SAFFIRE-II and III burned large fabric and plastic samples in an uncrewed Cygnus cargo vehicle, the most realistic spacecraft fires ever tested."},
+};
+const SLUG = Object.fromEntries(Object.entries(MODS).map(([k,m]) => [m.slug, k]));
+const SCEN = {
+  earth:{name:"Earth", g:"1 g", o2:[21,21], p:"1 atm"},
+  iss:  {name:"ISS", g:"≈0 g", o2:[20.5,22.5], p:"≈1 atm"},
+  moon: {name:"Lunar base", g:"0.16 g", o2:[30,34], p:"≤10.2 psi (≈0.69 atm)"},
+};
+let scen = "moon";
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmt = v => v == null ? "—" : (Number.isInteger(v) ? v : (+v).toFixed(1)).toString();
+
+/* ---------- applicability ---------- */
+function validity(e) {
+  const s = SCEN[scen], has = e.o2min != null;
+  const covers = has && e.o2max >= s.o2[0] && e.o2min <= s.o2[1];
+  if (scen === "iss") {
+    if (!has) return ["good","Directly applicable","Run in ISS cabin air; oxygen was not recorded separately."];
+    return covers ? ["good","Directly applicable","Run under ISS conditions."] : ["warn","Partly applicable","Run on the ISS, but at a different oxygen level."];
+  }
+  if (scen === "earth") return ["warn","Partly applicable","Run in microgravity. On Earth, buoyancy changes how flames and smoke behave."];
+  if (!has) return ["bad","Limited","No oxygen record (ISS air, about 21%, assumed). Lunar oxygen and 1/6 g were not tested."];
+  if (covers) return ["warn","Partly applicable",`Oxygen up to ${fmt(e.o2max)}% covers the lunar level. Gravity still differs (0 g vs 0.16 g).`];
+  return ["bad","Limited",`Highest oxygen tested was ${fmt(e.o2max)}%. The lunar level (30% or more) and 1/6 g were not tested.`];
+}
+const ICON = {good:"✓", warn:"!", bad:"✕"};
+const appHTML = e => { const [c,h,t] = validity(e); return `<div class="app ${c}"><b><span aria-hidden="true">${ICON[c]}</span>${h} for ${esc(SCEN[scen].name)}</b><span>${esc(t)}</span></div>`; };
+
+/* ---------- tooltip ---------- */
+const tip = document.getElementById("tip");
+function bindTips(svg){ svg.querySelectorAll("[data-tip]").forEach(n => {
+  n.addEventListener("mousemove", ev => { tip.innerHTML = n.dataset.tip; tip.style.display = "block"; tip.style.left = Math.min(ev.clientX + 14, innerWidth - 310) + "px"; tip.style.top = (ev.clientY + 14) + "px"; });
+  n.addEventListener("mouseleave", () => tip.style.display = "none"); }); }
+
+/* ---------- scenario ---------- */
+function renderAll(){
+  const s = SCEN[scen];
+  document.getElementById("facts").innerHTML = `<span>Gravity <b>${s.g}</b></span><span>Oxygen <b>${fmt(s.o2[0])}${s.o2[1]!==s.o2[0]?"–"+fmt(s.o2[1]):""}%</b></span><span>Pressure <b>${s.p}</b></span>`;
+  const ex = D.experiments, n = k => ex.filter(e => validity(e)[0] === k).length;
+  document.getElementById("nums").innerHTML = `<div><b>${ex.length}</b>investigations</div><div><b>${T.length}</b>test records</div><div><b>${n("good")+n("warn")}</b>at least partly applicable to ${esc(s.name)}</div>`;
+  drawO2Map(); renderModList(); renderModules(); renderCompare();
+}
+document.querySelectorAll("[data-scen]").forEach(b => b.onclick = () => {
+  scen = b.dataset.scen;
+  document.querySelectorAll("[data-scen]").forEach(x => x.setAttribute("aria-pressed", x === b));
+  renderAll();
+});
+
+/* ---------- oxygen coverage map ---------- */
+function band(X, top, bottom, label){
+  const s = SCEN[scen], a = X(s.o2[0]), b = Math.max(X(s.o2[1]), a+3);
+  return `<rect x="${a}" y="${top}" width="${b-a}" height="${bottom-top}" fill="rgba(144,133,233,.18)" stroke="#9085e9" stroke-dasharray="4 4"/>` +
+         (label ? `<text x="${(a+b)/2}" y="${top-8}" text-anchor="middle" style="fill:#b7aff5">${esc(s.name)}</text>` : "");
+}
+function drawO2Map(){
+  const svg = document.getElementById("o2map"), ex = D.experiments;
+  const W=1100, L=130, R=70, top=30, rowH=44, x0=10, x1=40, X = v => L + (v-x0)/(x1-x0)*(W-L-R);
+  const H = top + ex.length*rowH + 44; svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  let g = band(X, top-6, top+ex.length*rowH, true);
+  for (let v = x0; v <= x1; v += 5) g += `<line x1="${X(v)}" x2="${X(v)}" y1="${top-6}" y2="${top+ex.length*rowH}" stroke="#273050"/><text x="${X(v)}" y="${top+ex.length*rowH+20}" text-anchor="middle">${v}%</text>`;
+  g += `<text x="${(L+W-R)/2}" y="${H-4}" text-anchor="middle">Oxygen in the test atmosphere (% by volume)</text>`;
+  ex.forEach((e,i) => {
+    const y = top + i*rowH + rowH/2, m = MODS[e.module];
+    g += `<text class="lab" x="${L-14}" y="${y+5}" text-anchor="end">${esc(e.acronym)}</text>`;
+    const tt = `<b>${esc(e.acronym)}</b> · ${m.name}<br>${esc(e.title)}<br>${e.o2min!=null?`Oxygen ${fmt(e.o2min)}–${fmt(e.o2max)}%`:"Oxygen not recorded (ISS cabin, about 21%)"}<br>${e.n} test records · click to open`;
+    if (e.o2min == null) {
+      g += `<line x1="${X(20.5)}" x2="${X(22.5)}" y1="${y}" y2="${y}" stroke="${m.hex}" stroke-width="8" stroke-dasharray="2 4" opacity=".75"/><text x="${X(22.5)+12}" y="${y+5}">not recorded, about 21% assumed</text>`;
+    } else {
+      const a = X(e.o2min), b = Math.max(X(e.o2max), a+5);
+      g += `<rect x="${a}" y="${y-5}" width="${b-a}" height="10" fill="${m.hex}"/><text x="${b+10}" y="${y+5}">${fmt(e.o2min)}–${fmt(e.o2max)}%</text>`;
+    }
+    g += `<rect x="0" y="${y-rowH/2}" width="${W}" height="${rowH}" fill="transparent" style="cursor:pointer" data-tip="${esc(tt)}" data-go="${m.slug}"/>`;
+  });
+  svg.innerHTML = g; bindTips(svg);
+  svg.querySelectorAll("[data-go]").forEach(n => n.onclick = () => location.hash = n.dataset.go);
+  const solidsMax = Math.max(...D.experiments.filter(e => e.module==="onleme" && e.o2max!=null).map(e => e.o2max));
+  document.getElementById("gapnote").innerHTML = `<b>The gap:</b> fuel droplets were burned at up to 34% oxygen, but fabrics and plastics were only tested up to ${fmt(solidsMax)}%. PSI has no direct evidence for how solid materials in a lunar base behave at the oxygen level planned for it.`;
+}
+
+function renderModList(){
+  document.getElementById("modlist").innerHTML = Object.entries(MODS).map(([k,m]) => {
+    const ex = D.experiments.filter(e => e.module === k);
+    return `<div class="inv"><div><div class="ac" style="font-size:19px"><i class="sw" style="background:${m.hex};margin-right:8px"></i>${m.name}</div></div>
+      <div><div class="t">${esc(m.rq)}</div><div class="meta">${ex.map(e=>esc(e.acronym)).join(", ")} · ${ex.reduce((a,e)=>a+e.n,0)} test records</div></div>
+      <div style="align-self:center"><a href="#${m.slug}">Open ${m.name.toLowerCase()} →</a></div></div>`;
+  }).join("");
+}
+
+/* ---------- limitations ---------- */
+document.getElementById("limits").innerHTML = [
+  ["Gravity","All tests ran in microgravity (about 0 g). There is no data at the Moon's 0.16 g, so microgravity and Earth results can only bracket it."],
+  ["Oxygen for solids","Fabric and plastic tests (BASS-II, SAFFIRE) reached about 22% oxygen. The planned lunar level of 30% or more was never tested on solid materials."],
+  ["Detection records","SAME and SAME-R tables do not list ambient oxygen or pressure, so ISS cabin air is assumed."],
+  ["Airflow units","BASS-II records airflow as a fan setting rather than in cm/s, so its airflow cannot be compared with SAFFIRE."],
+  ["FLEX-2 detail","The FLEX-2 table lists the tested ranges per fuel (17–30% oxygen, 0.5–3 atm), not individual test results."],
+  ["Sample size","SAFFIRE burned 94 cm fabric sheets; BASS-II used centimeter-scale samples. Small-sample results do not scale directly to large fires."],
+].map(([h,t]) => `<li><b>${h}</b>${t}</li>`).join("");
+
+/* ---------- module pages ---------- */
+const COLS = {
+  tespit:   [["exp","Investigation"],["test","Test"],["material","Material"],["flow","Inlet velocity (cm/s)"],["duration","Duration (s)"],["aging","Net aging time (s)"],["note","Note"]],
+  sondurme: [["exp","Investigation"],["test","Test"],["material","Fuel"],["o2","O₂ %"],["diluent","Diluent"],["co2","CO₂ %"],["he","He %"],["pressure","Pressure (atm)"],["d0","Droplet diameter (mm)"],["burn","Burn time (s)"],["outcome","Outcome"],["note","Note"]],
+  onleme:   [["exp","Investigation"],["test","Test"],["material","Material"],["detail","Original name"],["o2","O₂ %"],["flow","Airflow (cm/s)"],["direction","Flame direction"],["burn","Burn time (s)"],["outcome","Outcome"],["note","Note"]],
+};
+const state = {tespit:{exp:"",mat:""}, sondurme:{exp:"",mat:"",dil:""}, onleme:{exp:"",mat:""}};
+
+function invRow(e){
+  const short = e.objective.length > 260 ? e.objective.slice(0,260).replace(/\s\S*$/,"") + "…" : e.objective;
+  return `<div class="inv" id="exp-${e.id}">
+    <div><div class="ac">${esc(e.acronym)}</div><div class="id">${e.id}</div></div>
+    <div>
+      <div class="t">${esc(e.title)}</div>
+      <div class="meta">${esc(e.start)}${e.end?" to "+esc(e.end):""} · ${esc(e.hardware)} · ${e.n} test records · oxygen ${e.o2min!=null?`${fmt(e.o2min)}–${fmt(e.o2max)}%`:"not recorded"}</div>
+      <p class="obj">${esc(short)}</p>
+      <details><summary>Approach, impact and publications</summary>
+        <p><b>Approach.</b> ${esc(e.approach)}</p>
+        <p><b>Impact and Earth benefits.</b> ${esc(e.impacts)}</p>
+        ${e.pubs.length?`<p><b>Selected publications.</b></p><ul>${e.pubs.map(p=>`<li>${esc(p.title)}${p.doi?` (<a href="https://doi.org/${esc(p.doi)}" target="_blank" rel="noopener">DOI</a>)`:""}</li>`).join("")}</ul>`:""}
+        <p><a href="https://doi.org/${esc(e.doi)}" target="_blank" rel="noopener">PSI record, doi:${esc(e.doi)}</a></p>
+      </details>
+    </div>
+    <div>${appHTML(e)}</div>
+  </div>`;
+}
+
+function renderModules(){
+  for (const [k, m] of Object.entries(MODS)) {
+    const ex = D.experiments.filter(e => e.module === k);
+    const el = document.getElementById("pg-" + m.slug);
+    const mats = [...new Set(T.filter(t => ex.some(e=>e.id===t.exp)).map(t => t.material))].sort();
+    el.innerHTML = `
+      <div class="phead">
+        <div class="mod"><i style="background:${m.hex}"></i>${m.name}</div>
+        <h1>${esc(m.rq)}</h1>
+        <p>${esc(m.intro)}</p>
+      </div>
+      <section class="block"><h2>Key findings</h2><ul class="findings" id="kf-${k}"></ul></section>
+      <section class="block"><h2>Investigations</h2>${ex.map(invRow).join("")}</section>
+      <section class="block"><h2 id="c2-title-${k}"></h2><p class="lede" id="c2-desc-${k}"></p><div class="legend" id="c2-lg-${k}"></div><svg class="chart" id="c2-${k}"></svg></section>
+      <section class="block"><h2 id="ch-title-${k}"></h2><p class="lede" id="ch-desc-${k}"></p><div class="legend" id="lg-${k}"></div><svg class="chart" id="ch-${k}"></svg></section>
+      <section class="block">
+        <h2>Test records</h2>
+        <div class="filters">
+          <select data-f="exp" aria-label="Investigation"><option value="">All investigations</option>${ex.map(e=>`<option value="${e.id}">${esc(e.acronym)}</option>`).join("")}</select>
+          <select data-f="mat" aria-label="Material"><option value="">All ${k==="sondurme"?"fuels":"materials"}</option>${mats.map(x=>`<option>${esc(x)}</option>`).join("")}</select>
+          ${k==="sondurme"?`<select data-f="dil" aria-label="Diluent"><option value="">All diluents</option><option>N₂ only</option><option>CO₂</option><option>Helium</option></select>`:""}
+          <span class="count" id="cnt-${k}"></span><span class="spacer"></span>
+          <button class="btn" data-dl="${k}">Download CSV</button><button class="btn" data-copy="${k}">Copy</button>
+        </div>
+        <div class="tablewrap"><table id="tb-${k}"></table></div>
+      </section>`;
+    el.querySelectorAll("select[data-f]").forEach(s => { s.value = state[k][s.dataset.f] || ""; s.onchange = () => { state[k][s.dataset.f] = s.value; drawTable(k); drawChart(k); }; });
+    drawTable(k); drawChart(k); drawFindings(k); drawChart2(k);
+  }
+  bindDownloads();
+}
+function filtered(k){
+  const st = state[k], ids = D.experiments.filter(e=>e.module===k).map(e=>e.id);
+  return T.filter(t => ids.includes(t.exp) && (!st.exp || t.exp===st.exp) && (!st.mat || t.material===st.mat) && (!st.dil || t.diluent===st.dil));
+}
+function drawTable(k){
+  const rows = filtered(k), cols = COLS[k];
+  document.getElementById("cnt-"+k).textContent = rows.length + " records";
+  document.getElementById("tb-"+k).innerHTML = `<thead><tr>${cols.map(c=>`<th>${c[1]}</th>`).join("")}</tr></thead><tbody>${
+    rows.map(r => `<tr>${cols.map(([f]) => { let v = f==="exp" ? E[r.exp].acronym : r[f]; const na = v==null || v===""; if (typeof v === "number") v = fmt(v); return `<td class="${na?"na":""}">${na?"no data":esc(v)}</td>`; }).join("")}</tr>`).join("")}</tbody>`;
+}
+
+/* ---------- module charts ---------- */
+function drawChart(k){
+  const svg = document.getElementById("ch-"+k), rows = filtered(k);
+  const title = document.getElementById("ch-title-"+k), desc = document.getElementById("ch-desc-"+k), lg = document.getElementById("lg-"+k);
+  let g = "";
+  if (k === "sondurme") {
+    title.textContent = "Oxygen level and burn time in FLEX";
+    desc.textContent = "Each mark is one burning droplet. Color shows which gas was added to the atmosphere; a cross means the flame went out before the fuel was used up.";
+    const DIL = [["N₂ only","#3987e5"],["CO₂","#d95926"],["Helium","#199e70"]];
+    lg.innerHTML = DIL.map(([n,c])=>`<span><i class="sw" style="background:${c}"></i>${n}</span>`).join("") + `<span>✕ flame extinguished</span><span>● other outcome</span>`;
+    const pts = rows.filter(r => r.exp==="PSI-69" && r.o2!=null && r.burn!=null);
+    const W=1100,H=420,L=64,B=50,top=34,R=24, X=v=>L+(v-10)/(36-10)*(W-L-R), ymax=Math.max(10,...pts.map(p=>p.burn)), Y=v=>H-B-(v/ymax)*(H-B-top);
+    g += band(X, top, H-B, true);
+    [0,10,20,30,40].filter(v=>v<=ymax+5).forEach(v=>{ g+=`<line x1="${L}" x2="${W-R}" y1="${Y(v)}" y2="${Y(v)}" stroke="#273050"/><text x="${L-10}" y="${Y(v)+4}" text-anchor="end">${v}</text>`; });
+    [10,15,20,25,30,35].forEach(v=>{ g+=`<text x="${X(v)}" y="${H-B+20}" text-anchor="middle">${v}%</text>`; });
+    g += `<text x="${(L+W-R)/2}" y="${H-6}" text-anchor="middle">Oxygen in the chamber</text><text transform="translate(16 ${(top+H-B)/2}) rotate(-90)" text-anchor="middle">Burn time (s)</text>`;
+    pts.forEach(p => { const c = (DIL.find(d=>d[0]===p.diluent)||DIL[0])[1], x=X(p.o2), y=Y(p.burn);
+      const t = `<b>FLEX test ${esc(p.test)}</b> · ${esc(p.material)}<br>Oxygen ${fmt(p.o2)}% · ${esc(p.diluent)}${p.co2?` (CO₂ ${fmt(p.co2)}%)`:""}${p.he?` (He ${fmt(p.he)}%)`:""}<br>Pressure ${fmt(p.pressure)} atm · droplet ${fmt(p.d0)} mm<br>Burn time ${fmt(p.burn)} s · ${esc(p.outcome)}`;
+      g += p.outcome==="Extinction" ? `<path d="M${x-4.5} ${y-4.5}L${x+4.5} ${y+4.5}M${x+4.5} ${y-4.5}L${x-4.5} ${y+4.5}" stroke="${c}" stroke-width="2.2"/>` : `<circle cx="${x}" cy="${y}" r="4.5" fill="${c}" stroke="#0f1424" stroke-width="2"/>`;
+      g += `<circle cx="${x}" cy="${y}" r="10" fill="transparent" data-tip="${esc(t)}"/>`; });
+    if (!pts.length) g += `<text x="${W/2}" y="${H/2}" text-anchor="middle">No FLEX records match this filter. FLEX-2 only reports tested ranges.</text>`;
+    svg.setAttribute("viewBox",`0 0 ${W} ${H}`);
+  } else if (k === "onleme") {
+    title.textContent = "Oxygen levels at which solids were burned";
+    desc.textContent = "Each mark is one BASS-II or SAFFIRE-II test, grouped by material. Not one of them reaches the oxygen band of a lunar base.";
+    lg.innerHTML = `<span><i class="sw" style="background:#199e70"></i>BASS-II</span><span><i class="sw" style="background:#3987e5"></i>SAFFIRE-II</span>`;
+    const pts = rows.filter(r => r.o2 != null), cats = [...new Set(pts.map(p=>p.material))];
+    const W=1100,L=170,R=24,top=34,rowH=38,B=50,H=top+Math.max(1,cats.length)*rowH+B, X=v=>L+(v-10)/(36-10)*(W-L-R);
+    g += band(X, top, H-B, true);
+    [10,15,20,25,30,35].forEach(v=>{g+=`<line x1="${X(v)}" x2="${X(v)}" y1="${top}" y2="${H-B}" stroke="#273050"/><text x="${X(v)}" y="${H-B+20}" text-anchor="middle">${v}%</text>`;});
+    g += `<text x="${(L+W-R)/2}" y="${H-6}" text-anchor="middle">Oxygen at ignition</text>`;
+    cats.forEach((c,i)=>{ const y=top+i*rowH+rowH/2; g+=`<text class="lab" x="${L-14}" y="${y+5}" text-anchor="end">${esc(c)}</text>`;
+      pts.filter(p=>p.material===c).forEach((p,j)=>{ const col = p.exp==="PSI-25"?"#199e70":"#3987e5", x=X(p.o2), yy=y+((j%5)-2)*3.5;
+        const t=`<b>${esc(E[p.exp].acronym)} · ${esc(p.test)}</b><br>${esc(p.detail||p.material)}<br>Oxygen ${fmt(p.o2)}%${p.flow!=null?` · airflow ${fmt(p.flow)} cm/s`:""}${p.direction?` · ${esc(p.direction)}`:""}${p.outcome?`<br>${esc(p.outcome)}`:""}${p.note?`<br>${esc(p.note)}`:""}`;
+        g+=`<circle cx="${x}" cy="${yy}" r="4.5" fill="${col}" stroke="#0f1424" stroke-width="2"/><circle cx="${x}" cy="${yy}" r="10" fill="transparent" data-tip="${esc(t)}"/>`; }); });
+    if (!pts.length) g += `<text x="${W/2}" y="${H/2}" text-anchor="middle">No records with an oxygen value match this filter. SAFFIRE-III did not record oxygen.</text>`;
+    svg.setAttribute("viewBox",`0 0 ${W} ${H}`);
+  } else {
+    title.textContent = "Materials whose smoke was measured";
+    desc.textContent = "Test records per material across SAME and SAME-R. Hover a bar to see the flow speeds used.";
+    lg.innerHTML = "";
+    const by = {}; rows.forEach(r=>{ const m=r.material.replace("Silicone Rubber","Silicone"); (by[m] ||= []).push(r); });
+    const cats = Object.entries(by).sort((a,b)=>b[1].length-a[1].length);
+    const W=1100,L=170,R=70,top=10,rowH=40,B=10,H=top+Math.max(1,cats.length)*rowH+B, max=Math.max(1,...cats.map(c=>c[1].length)), X=v=>L+v/max*(W-L-R);
+    cats.forEach(([m,rs],i)=>{ const y=top+i*rowH; const flows=[...new Set(rs.map(r=>r.flow).filter(v=>v!=null))].sort((a,b)=>a-b);
+      const t=`<b>${esc(m)}</b><br>${rs.length} test records<br>Flow speeds: ${flows.map(fmt).join(", ")||"—"} cm/s`;
+      g+=`<text class="lab" x="${L-14}" y="${y+rowH/2+5}" text-anchor="end">${esc(m)}</text><rect x="${L}" y="${y+12}" width="${Math.max(2,X(rs.length)-L)}" height="${rowH-24}" fill="#3987e5"/><text x="${X(rs.length)+10}" y="${y+rowH/2+5}">${rs.length}</text><rect x="0" y="${y}" width="${W}" height="${rowH}" fill="transparent" data-tip="${esc(t)}"/>`; });
+    svg.setAttribute("viewBox",`0 0 ${W} ${H}`);
+  }
+  svg.innerHTML = g; bindTips(svg);
+}
+
+/* ---------- key findings (computed from the data) ---------- */
+const pct = (a,b) => b ? Math.round(100*a/b) : 0;
+function extStats(lo, hi, dil){ const s = T.filter(t => t.exp==="PSI-69" && t.diluent===dil && t.o2>=lo && t.o2<=hi); return [s.filter(t=>t.outcome==="Extinction").length, s.length]; }
+function drawFindings(k){
+  let items = [];
+  if (k === "sondurme") {
+    const [n1,d1]=extStats(17,21,"N₂ only"), [c1,cd]=extStats(17,21,"CO₂"), [h1,hd]=extStats(17,21,"Helium"), [m1,md]=extStats(30,34,"N₂ only");
+    items = [
+      `<b>Diluents help at Earth-like oxygen.</b> Between 17% and 21% oxygen, flames went out in ${pct(n1,d1)}% of tests with nitrogen only (${n1} of ${d1}), but in ${pct(c1,cd)}% with added CO₂ (${c1} of ${cd}) and ${pct(h1,hd)}% with added helium (${h1} of ${hd}).`,
+      `<b>At lunar-base oxygen, flames rarely put themselves out.</b> At 30–34% oxygen only ${m1} of ${md} droplet flames self-extinguished. Most ended with the droplet bursting apart, which can spread burning fuel.`,
+      `<b>CO₂ and helium were never tested above 25% oxygen.</b> Whether they still work as suppressants in a lunar-base atmosphere is not answered by this data.`,
+    ];
+    items.push(["caveat", `Test conditions were not varied one at a time: pressure also ranged from 0.7 to 3 atm, so these shares describe the tests that were run, not a controlled comparison.`]);
+  } else if (k === "onleme") {
+    const sat = T.filter(t => t.exp==="PSI-99"), sil = sat.filter(t => t.material==="Silicone"), silFull = sil.filter(t => t.g1burn==="Complete").length;
+    const sib = sat.filter(t => t.material==="SIBAL fabric").map(t => t.spread).filter(Boolean);
+    const b = T.filter(t => t.exp==="PSI-25" && t.o2!=null), low = b.filter(t => t.o2 < 21).length;
+    items = [
+      `<b>Earth's screening test can be harsher than space.</b> In SAFFIRE-II, silicone did not spread flame in microgravity in any of ${sil.length} samples, although ${silFull} of the same samples burned completely in NASA's normal-gravity screening test.`,
+      `<b>Cotton-fiberglass fabric keeps burning.</b> SIBAL fabric spread flame in microgravity at ${sib.join(" and ")} with the airflow (20 cm/s).`,
+      `<b>Nomex resisted ignition.</b> In the mixed PMMA and Nomex sample, the PMMA burned away but the Nomex did not ignite.`,
+      `<b>The search was for the lowest oxygen that still burns.</b> ${low} of ${b.length} BASS-II tests ran below 21% oxygen. None of the solid-material tests went above 22.2%, so oxygen-rich conditions remain untested.`,
+    ];
+  } else {
+    const r = T.filter(t => t.exp==="PSI-101"), fast = r.filter(t => t.flow>=8).length, still = r.filter(t => t.flow===0).length;
+    const ag = r.map(t=>t.aging).filter(v=>v!=null);
+    items = [
+      `<b>Five spacecraft materials were heated to make smoke:</b> Kapton, silicone, Teflon, lampwick (cotton) and, in SAME-R, the fire-retardant Pyrell.`,
+      `<b>Smoke was measured after it had time to age.</b> Net aging times ranged from ${Math.min(...ag)} s to about ${Math.round(Math.max(...ag)/60)} minutes, because smoke particles keep growing while they drift in microgravity.`,
+      `<b>Most tests used one flow speed.</b> ${fast} of ${r.length} SAME-R tests ran at about 8 cm/s; ${still} ran with no flow at all.`,
+    ];
+    items.push(["caveat", `The experimental tables list test conditions only. The measured smoke particle sizes are in PSI's raw data files, so this dashboard cannot yet compare smoke between materials.`]);
+  }
+  document.getElementById("kf-"+k).innerHTML = items.map(x => Array.isArray(x) ? `<li class="${x[0]}">${x[1]}</li>` : `<li>${x}</li>`).join("");
+}
+
+function drawChart2(k){
+  const svg = document.getElementById("c2-"+k), title = document.getElementById("c2-title-"+k), desc = document.getElementById("c2-desc-"+k), lg = document.getElementById("c2-lg-"+k);
+  let g = "";
+  if (k === "sondurme") {
+    title.textContent = "How often did the flame go out?";
+    desc.textContent = "Share of FLEX tests that ended in extinction, by oxygen level and by the gas added to the chamber. Hover a bar for the count. Missing bars mean that combination was never tested.";
+    const DIL = [["N₂ only","#3987e5"],["CO₂","#d95926"],["Helium","#199e70"]], BANDS = [[12,16.9,"12–16%"],[17,21,"17–21%"],[22,25,"22–25%"],[30,34,"30–34%"]];
+    lg.innerHTML = DIL.map(([n,c])=>`<span><i class="sw" style="background:${c}"></i>${n}</span>`).join("");
+    const W=1100,H=360,L=64,R=24,top=34,B=56, gw=(W-L-R)/BANDS.length, bw=Math.min(54,(gw-60)/3), Y=v=>H-B-(v/100)*(H-B-top);
+    [0,25,50,75,100].forEach(v=>{ g+=`<line x1="${L}" x2="${W-R}" y1="${Y(v)}" y2="${Y(v)}" stroke="#273050"/><text x="${L-10}" y="${Y(v)+4}" text-anchor="end">${v}%</text>`; });
+    BANDS.forEach(([lo,hi,lab],i) => {
+      const gx = L + i*gw, s = SCEN[scen], inBand = hi >= s.o2[0] && lo <= s.o2[1];
+      if (inBand) g += `<rect x="${gx+6}" y="${top-6}" width="${gw-12}" height="${H-B-top+6}" fill="rgba(144,133,233,.18)" stroke="#9085e9" stroke-dasharray="4 4"/><text x="${gx+gw/2}" y="${top-12}" text-anchor="middle" style="fill:#b7aff5">${esc(s.name)}</text>`;
+      DIL.forEach(([d,c],j) => { const [e,n] = extStats(lo,hi,d), x = gx + (gw-3*bw-8)/2 + j*(bw+4);
+        if (!n) { g += `<text x="${x+bw/2}" y="${H-B-6}" text-anchor="middle" style="fill:#7a84a0;font-size:11px">none</text>`; return; }
+        const v = 100*e/n; g += `<rect x="${x}" y="${Y(v)}" width="${bw}" height="${Math.max(1,H-B-Y(v))}" fill="${c}"/><text x="${x+bw/2}" y="${Y(v)-6}" text-anchor="middle">${Math.round(v)}%</text><rect x="${x}" y="${top}" width="${bw}" height="${H-B-top}" fill="transparent" data-tip="${esc(`<b>${lab} oxygen · ${d}</b><br>${e} of ${n} flames went out (${Math.round(v)}%)`)}"/>`; });
+      g += `<text class="lab" x="${gx+gw/2}" y="${H-B+22}" text-anchor="middle">${lab}</text>`;
+    });
+    g += `<text x="${(L+W-R)/2}" y="${H-6}" text-anchor="middle">Oxygen in the chamber</text>`;
+    svg.setAttribute("viewBox",`0 0 ${W} ${H}`);
+  } else if (k === "onleme") {
+    title.textContent = "Does Earth's flammability test predict space?";
+    desc.textContent = "Each row is one SAFFIRE-II sample, burned once in microgravity and once in NASA's normal-gravity (1 g) screening test. Dark squares mean the flame spread.";
+    lg.innerHTML = `<span><i class="sw" style="background:#199e70"></i>Flame spread</span><span><i class="sw" style="background:#4b5577"></i>Partial spread</span><span><i class="sw" style="outline:1px solid #4b5577"></i>No spread</span>`;
+    const rows = T.filter(t => t.exp==="PSI-99");
+    const W=1100, L=330, top=44, rowH=34, H=top+rows.length*rowH+10, cx=[L+170, L+470];
+    g += `<text class="lab" x="${cx[0]}" y="${top-18}" text-anchor="middle">Microgravity (SAFFIRE-II)</text><text class="lab" x="${cx[1]}" y="${top-18}" text-anchor="middle">Normal gravity (1 g screening)</text>`;
+    const state1g = v => !v || /^~\s*0/.test(v) ? 0 : (v==="Complete" ? 2 : 1);
+    rows.forEach((t,i) => { const y = top + i*rowH + rowH/2, mu = t.outcome==="Burned" ? 2 : 0, one = state1g(t.g1burn);
+      g += `<line x1="20" x2="${W-20}" y1="${y+rowH/2}" y2="${y+rowH/2}" stroke="#273050"/><text class="lab" x="20" y="${y+5}">${esc(t.test)} · ${esc(t.material)}</text>`;
+      [[mu, cx[0], `Microgravity: ${t.outcome}${t.spread&&t.spread!=="n/a"&&!/Note/.test(t.spread)?` at ${t.spread}`:""}`],[one, cx[1], `1 g burn length: ${t.g1burn||"—"}${t.g1spread&&t.g1spread!=="n/a"?` · ${t.g1spread}`:""}`]].forEach(([v,x,tt]) => {
+        g += v===2 ? `<rect x="${x-9}" y="${y-9}" width="18" height="18" fill="#199e70"/>` : v===1 ? `<rect x="${x-9}" y="${y-9}" width="18" height="18" fill="#4b5577"/>` : `<rect x="${x-8.5}" y="${y-8.5}" width="17" height="17" fill="none" stroke="#4b5577"/>`;
+        g += `<rect x="${x-60}" y="${y-rowH/2}" width="120" height="${rowH}" fill="transparent" data-tip="${esc(`<b>Sample ${t.test} · ${t.material}</b><br>${tt}`)}"/>`; }); });
+    svg.setAttribute("viewBox",`0 0 ${W} ${H}`);
+  } else {
+    title.textContent = "How the smoke tests were set up";
+    desc.textContent = "Number of SAME-R tests for each material, by airflow and by how long the smoke aged before it was measured. Darker cells mean more tests.";
+    lg.innerHTML = "";
+    const r = T.filter(t => t.exp==="PSI-101");
+    const COLSD = [["No flow", t=>t.flow===0],["1–2 cm/s", t=>t.flow>0&&t.flow<5],["≈8 cm/s", t=>t.flow>=5],["Aged < 2 min", t=>t.aging!=null&&t.aging<120],["Aged ≥ 2 min", t=>t.aging!=null&&t.aging>=120]];
+    const mats = [...new Set(r.map(t=>t.material))].sort();
+    const W=1100, L=170, top=40, rowH=40, cw=(W-L-20)/COLSD.length, H=top+mats.length*rowH+10;
+    const counts = mats.map(m => COLSD.map(([_,f]) => r.filter(t=>t.material===m && f(t)).length)), max = Math.max(...counts.flat());
+    const shade = n => { const ramp=["#1c2540","#184f95","#256abf","#3987e5","#6da7ec"]; return n===0 ? "#151b2f" : ramp[Math.min(4, Math.ceil(4*n/max))]; };
+    COLSD.forEach(([lab],j) => g += `<text class="lab" x="${L+j*cw+cw/2}" y="${top-14}" text-anchor="middle">${lab}</text>`);
+    g += `<line x1="${L+3*cw}" x2="${L+3*cw}" y1="${top-30}" y2="${H-10}" stroke="#7a84a0" stroke-dasharray="3 4"/>`;
+    mats.forEach((m,i) => { const y = top+i*rowH; g += `<text class="lab" x="${L-14}" y="${y+rowH/2+5}" text-anchor="end">${esc(m)}</text>`;
+      counts[i].forEach((n,j) => { const x=L+j*cw; g += `<rect x="${x+2}" y="${y+2}" width="${cw-4}" height="${rowH-4}" fill="${shade(n)}"/><text x="${x+cw/2}" y="${y+rowH/2+5}" text-anchor="middle" style="fill:${n?"#e8ebf4":"#7a84a0"}">${n}</text><rect x="${x}" y="${y}" width="${cw}" height="${rowH}" fill="transparent" data-tip="${esc(`<b>${m}</b> · ${COLSD[j][0]}<br>${n} SAME-R tests`)}"/>`; }); });
+    svg.setAttribute("viewBox",`0 0 ${W} ${H}`);
+  }
+  svg.innerHTML = g; bindTips(svg);
+}
+
+/* ---------- compare ---------- */
+const cmpA = document.getElementById("cmpA"), cmpB = document.getElementById("cmpB");
+const opts = D.experiments.map(e=>`<option value="${e.id}">${esc(e.acronym)} (${MODS[e.module].name})</option>`).join("");
+cmpA.innerHTML = opts; cmpB.innerHTML = opts; cmpA.value = "PSI-99"; cmpB.value = "PSI-25";
+cmpA.onchange = cmpB.onchange = renderCompare;
+function rng(rs, f){ const v = rs.map(r=>r[f]).filter(x=>x!=null && x!==""); if(!v.length) return "no data"; if (typeof v[0]==="number"){ const a=Math.min(...v), b=Math.max(...v); return a===b?fmt(a):`${fmt(a)} – ${fmt(b)}`;} return [...new Set(v)].slice(0,6).join(", "); }
+function renderCompare(){
+  const ids=[cmpA.value,cmpB.value], ex=ids.map(i=>E[i]), rs=ids.map(i=>T.filter(t=>t.exp===i));
+  const rows = [
+    ["Module", e=>MODS[e.module].name], ["Full name", e=>e.title], ["Dates", e=>`${e.start}${e.end?" to "+e.end:""}`], ["Hardware", e=>e.hardware],
+    ["Test records", e=>e.n], ["Materials or fuels", e=>e.materials.join(", ")],
+    ["Oxygen range", e=>e.o2min!=null?`${fmt(e.o2min)} – ${fmt(e.o2max)}%`:"not recorded"],
+    ["Airflow (cm/s)", (e,i)=> e.id==="PSI-68"?"0.1 – 5":(e.id==="PSI-69"?"0 (still air)":rng(rs[i],"flow"))],
+    ["Pressure (atm)", (e,i)=> e.id==="PSI-68"?"0.5 – 3":rng(rs[i],"pressure")],
+    ["Diluent", (e,i)=> rng(rs[i],"diluent")],
+    ["Outcomes", (e,i)=> rng(rs[i],"outcome")],
+    ["Applicability", e=>appHTML(e), true],
+    ["Source", e=>`<a href="https://doi.org/${esc(e.doi)}" target="_blank" rel="noopener">doi:${esc(e.doi)}</a>`, true],
+  ];
+  document.getElementById("cmpT").innerHTML = `<thead><tr><th></th>${ex.map(e=>`<th>${esc(e.acronym)}</th>`).join("")}</tr></thead><tbody>${
+    rows.map(([n,f,html])=>`<tr><th>${n}</th>${ex.map((e,i)=>{const v=f(e,i); return `<td>${html?v:esc(v)}</td>`;}).join("")}</tr>`).join("")}</tbody>`;
+}
+
+/* ---------- data page ---------- */
+document.getElementById("srcT").innerHTML = `<thead><tr><th>Investigation</th><th>Module</th><th>Records</th><th>Original file</th><th>DOI</th><th>Original CSV</th></tr></thead><tbody>${
+  D.experiments.map(e=>`<tr><td><b>${esc(e.acronym)}</b> <span class="faint">${e.id}</span></td><td>${MODS[e.module].name}</td><td>${e.n}</td><td class="faint">${esc(e.rawfile)}</td><td><a href="https://doi.org/${esc(e.doi)}" target="_blank" rel="noopener">${esc(e.doi)}</a></td><td><button class="btn" data-dl="raw:${e.id}">Download</button> <button class="btn" data-copy="raw:${e.id}">Copy</button></td></tr>`).join("")}</tbody>`;
+const ALLC = ["exp","acronym","test","material","detail","phase","o2","flow","pressure","diluent","co2","he","d0","dext","burn","direction","outcome","duration","aging","note"];
+function toCSV(rows, cols){ const q=v=>{ if(v==null) return ""; const s=String(v); return /[",\n]/.test(s)?`"${s.replace(/"/g,'""')}"`:s; }; return [cols.join(","), ...rows.map(r=>cols.map(c=>q(c==="acronym"?E[r.exp].acronym:r[c])).join(","))].join("\n"); }
+function payload(key){
+  if (key==="clean") return ["pyrolunar_clean.csv", toCSV(T, ALLC)];
+  if (key.startsWith("raw:")) { const id=key.slice(4); return [D.raw[id].file, D.raw[id].csv]; }
+  return [`pyrolunar_${MODS[key].slug}.csv`, toCSV(filtered(key), ["exp","acronym", ...COLS[key].map(c=>c[0]).filter(c=>c!=="exp")])];
+}
+const toast = m => { const t=document.getElementById("toast"); t.textContent=m; t.style.display="block"; clearTimeout(toast.h); toast.h=setTimeout(()=>t.style.display="none",2400); };
+function bindDownloads(){
+  document.querySelectorAll("[data-dl]").forEach(b => b.onclick = () => { const [n,c]=payload(b.dataset.dl);
+    try { const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob(["﻿"+c],{type:"text/csv;charset=utf-8"})); a.download=n; document.body.appendChild(a); a.click(); a.remove(); toast("Downloading "+n+". If nothing happens, use Copy."); } catch(e){ toast("Download blocked. Use Copy instead."); } });
+  document.querySelectorAll("[data-copy]").forEach(b => b.onclick = async () => { const [n,c]=payload(b.dataset.copy);
+    try { await navigator.clipboard.writeText(c); toast("Copied "+n+" to the clipboard"); } catch(e){ toast("Clipboard access was denied"); } });
+}
+
+/* ---------- routing (separate pages via #hash) ---------- */
+const PAGES = ["overview","detection","extinguishment","prevention","compare","data"];
+function route(){
+  const raw = location.hash.slice(1), [page, target] = raw.split("--");
+  const p = PAGES.includes(page) ? page : "overview";
+  document.querySelectorAll(".page").forEach(el => el.classList.toggle("on", el.id === "pg-"+p));
+  document.querySelectorAll("#links a").forEach(a => { if (a.getAttribute("href") === "#"+p) a.setAttribute("aria-current","page"); else a.removeAttribute("aria-current"); });
+  if (target) { const n = document.getElementById(target); if (n) { setTimeout(()=>{ n.scrollIntoView({behavior:"smooth",block:"center"}); n.style.outline="2px solid #8ab8ff"; setTimeout(()=>n.style.outline="",1600); }, 50); return; } }
+  window.scrollTo(0,0);
+}
+addEventListener("hashchange", route);
+
+/* ---------- search palette (keyword routing, not a chatbot) ---------- */
+const KW = [
+  {k:["smoke","aerosol","particle","detector","detect","alarm","sensor","measure","soot","duman","dedektör","tespit"], to:"detection", why:"Smoke and aerosol measurement"},
+  {k:["extingu","suppress","co2","co₂","carbon dioxide","helium","dilut","droplet","fuel","heptane","methanol","mist","söndür","helyum","damla"], to:"extinguishment", why:"Putting flames out by diluting the atmosphere"},
+  {k:["fabric","textile","plastic","pmma","nomex","sibal","silicone","cotton","material","flammab","ignit","flame spread","spread","prevent","kumaş","plastik","malzeme"], to:"prevention", why:"How solid materials ignite and spread flame"},
+  {k:["oxygen","o2","o₂","moon","lunar","mars","scenario","gap","missing","limit","gravity","oksijen","ay üssü"], to:"overview", why:"Oxygen coverage map, the data gap and limitations"},
+  {k:["compare","versus","difference","karşılaştır"], to:"compare", why:"Compare two investigations side by side"},
+  {k:["csv","download","data","doi","source","cite","citation","raw","veri","kaynak"], to:"data", why:"Original data files and citations"},
+];
+const NAMES = {overview:"Overview",detection:"Detection",extinguishment:"Extinguishment",prevention:"Prevention",compare:"Compare",data:"Data"};
+const pal = document.getElementById("palette"), qi = document.getElementById("q"), pres = document.getElementById("pres");
+let res = [], sel = 0;
+function search(q){
+  q = q.trim().toLowerCase(); if (!q) return [];
+  const out = [];
+  D.experiments.forEach(e => { const hay = [e.acronym,e.title,e.materials.join(" "),e.objective].join(" ").toLowerCase();
+    if (e.acronym.toLowerCase().includes(q) || (q.length>2 && hay.includes(q))) out.push({label:`${e.acronym}: ${e.title}`, sub:`${MODS[e.module].name} · open this investigation`, href:`#${MODS[e.module].slug}--exp-${e.id}`, score: e.acronym.toLowerCase().startsWith(q)?3:1}); });
+  KW.forEach(g => { if (g.k.some(k => q.includes(k) || (q.length>2 && k.startsWith(q)))) out.push({label:NAMES[g.to], sub:g.why, href:"#"+g.to, score:2}); });
+  [...new Set(T.map(t=>t.material))].filter(m => q.length>2 && m.toLowerCase().includes(q)).slice(0,4).forEach(m => {
+    const mod = E[T.find(x=>x.material===m).exp].module;
+    out.push({label:`Material or fuel: ${m}`, sub:`Show ${MODS[mod].name.toLowerCase()} records for this material`, run:()=>{ state[mod].mat=m; state[mod].exp=""; renderModules(); location.hash = `${MODS[mod].slug}--tb-${mod}`; }, score:2}); });
+  const seen = new Set(); return out.sort((a,b)=>b.score-a.score).filter(r => !seen.has(r.label) && seen.add(r.label)).slice(0,8);
+}
+function paint(){
+  pres.innerHTML = res.length ? res.map((r,i)=>`<button data-i="${i}" class="${i===sel?"sel":""}">${esc(r.label)}<small>${esc(r.sub)}</small></button>`).join("")
+    : (qi.value.trim() ? `<div class="pempty">Your buddy found nothing for "${esc(qi.value)}". Try a shorter word, or one of the topics above.</div>` : "");
+  pres.querySelectorAll("[data-i]").forEach(b => b.onclick = () => go(res[+b.dataset.i]));
+}
+function go(r){ if (!r) return; closeFind(); if (r.run) r.run(); else location.hash = r.href; }
+function openFind(){ pal.classList.add("on"); qi.value=""; res=[]; sel=0; paint(); setTimeout(()=>qi.focus(),10); }
+function closeFind(){ pal.classList.remove("on"); }
+document.getElementById("openFind").onclick = openFind;
+pal.addEventListener("click", e => { if (e.target === pal) closeFind(); });
+pal.querySelectorAll("[data-try]").forEach(b => b.onclick = () => { qi.value = b.dataset.try; qi.dispatchEvent(new Event("input")); qi.focus(); });
+qi.addEventListener("input", () => { res = search(qi.value); sel = 0; paint(); });
+qi.addEventListener("keydown", e => {
+  if (e.key==="ArrowDown"){ sel=Math.min(sel+1,res.length-1); paint(); e.preventDefault(); }
+  if (e.key==="ArrowUp"){ sel=Math.max(sel-1,0); paint(); e.preventDefault(); }
+  if (e.key==="Enter") go(res[sel]);
+});
+addEventListener("keydown", e => { if ((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==="k"){ e.preventDefault(); openFind(); } if (e.key==="Escape") closeFind(); });
+
+renderAll(); route();
+})();
+</script>
+</body>
+</html>
